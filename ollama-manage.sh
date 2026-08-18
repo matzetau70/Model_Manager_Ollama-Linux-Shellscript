@@ -179,6 +179,7 @@ text_menu() {
   done
 }
 
+# TODO: ok
 
 # Zentraler Einstiegspunkt: prueft Argumente und waehlt interaktiven oder direkten Modus.
 main() {
