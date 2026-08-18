@@ -95,6 +95,12 @@ pull_model() {
     return
   fi
   
+  # Modellnamen-Validierung
+  if [[ ! "$model" =~ ^[a-zA-Z0-9_@.-]+$ ]]; then
+    echo "Fehler: Ungueltiger Modellname. Nur Buchstaben, Zahlen, _, @, . und - erlauben."
+    return 1
+  fi
+  
   # Pruengen, ob Modell bereits installiert
   if ollama list 2>/dev/null | grep -q "^${model}$"; then
     echo "Hinweis: $model ist bereits installiert."
@@ -178,8 +184,6 @@ text_menu() {
     esac
   done
 }
-
-# TODO: ok
 
 # Zentraler Einstiegspunkt: prueft Argumente und waehlt interaktiven oder direkten Modus.
 main() {
