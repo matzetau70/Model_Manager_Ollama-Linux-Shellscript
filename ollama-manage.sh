@@ -185,6 +185,6 @@ text_menu() {
 main() {
   require_ollama  # Ollama-Pruefung vor Menu-Auswahl
   
-  text_menu
+  text_menu       # Menu-Auswahl
 }
 main "$@"
