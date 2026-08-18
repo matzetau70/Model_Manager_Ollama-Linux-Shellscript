@@ -95,20 +95,20 @@ pull_model() {
     return
   fi
   
-  # Modellnamen-Validierung
-  if [[ ! "$model" =~ ^[a-zA-Z0-9_@.-]+$ ]]; then
-    echo "Fehler: Ungueltiger Modellname. Nur Buchstaben, Zahlen, _, @, . und - erlauben."
+  # Modellnamen-Validierung (Doppelpunkt für Tags wie llama3.2:1b erlauben)
+  if [[ ! "$model" =~ ^[a-zA-Z0-9_@:.-]+$ ]]; then
+    echo "Fehler: Ungültiger Modellname. Nur Buchstaben, Zahlen, _, @, :, . und - erlauben."
     return 1
   fi
   
-  # Pruengen, ob Modell bereits installiert
-  if ollama list 2>/dev/null | grep -q "^${model}$"; then
+  # Prüfen, ob Modell bereits installiert
+  if ollama list 2>/dev/null | awk -v m="$model" '$1 == m {found=1} END {exit !found}'; then
     echo "Hinweis: $model ist bereits installiert."
     return 0
   fi
   
   echo "Installiere: $model"
-  ollama pull "$model"
+  ollama pull -- "$model"
 }
 
 # Loescht ein lokal installiertes Modell.
@@ -136,27 +136,24 @@ run_model() {
     return
   fi
   
-  # Pruengen, ob Modell bereits aktiv
-  if ollama list 2>/dev/null | grep -q "^${model}$"; then
-    echo "Hinweis: $model ist bereits aktiv."
-    return 0
-  fi
-  
-  ollama run "$model"
+  ollama run -- "$model"
 }
 
-# Stoppt ein laufendes Modell, falls Ollama es kennt.
+# Stoppt ein laufendes Modell über die Ollama-HTTP-API.
 stop_model() {
   local model="${1:-}"
   if [ -z "$model" ]; then
     model="$(pick_model "Welches Modell stoppen?" || true)"
   fi
   if [ -z "$model" ]; then
-    echo "Abgebrochen: kein Modellname angegeben."
+    echo "Abgebrochen: Kein Modellname angegeben."
     return
   fi
   echo "Stoppe: $model"
-  ollama stop "$model"
+  # Ollama bietet keinen CLI-Befehl zum Stoppen; die HTTP-API wird genutzt.
+  curl -s -X POST http://localhost:11434/api/generate \
+    -H "Content-Type: application/json" \
+    -d "{\"model\": \"$model\", \"keep_alive\": 0}" >/dev/null
 }
 
 # Textbasiertes Fallback-Menue fuer Terminals ohne whiptail.
