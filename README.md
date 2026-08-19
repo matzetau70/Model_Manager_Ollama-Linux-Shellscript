@@ -121,10 +121,6 @@ Das Install-Skript lädt derzeit diese Modelle:
 
 Hier sind Screenshots des Skripts in verschiedenen Modi:
 
-### Textmenü (Standard ohne fzf/whiptail)
-
-![Terminal-Screenshot: Textmenü des Model Managers für Ollama](./Beispielbild/ollama-manage-beispiel-text.png)
-
 ### whiptail-Dialog (grafisches Menü)
 
 ![Terminal-Screenshot: whiptail-Dialog Menü des Model Managers für Ollama](./Beispielbild/ollama-manage-beispiel-whipe.png)
