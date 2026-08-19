@@ -28,8 +28,8 @@ Ein kleines Shell-Projekt zur komfortablen Verwaltung von [Ollama](https://ollam
 ├── LICENSE                       # MIT-Lizenz
 ├── README.md                     # Diese Dokumentation
 └── Beispielbild/
+    ├── ollama-manage-beispiel-text.png
     └── ollama-manage-beispiel-whipe.png
-    └── ollama-manage-beispiel.png
 ```
 
 ## Voraussetzungen
@@ -131,7 +131,7 @@ Hier sind Screenshots des Skripts in verschiedenen Modi:
 
 ### Textmenü mit Modellauflistung
 
-![Terminal-Screenshot: Textmenü des Model Managers für Ollama mit Auflistung der installierten Modelle](./Beispielbild/ollama-manage-beispiel.png)
+![Terminal-Screenshot: Textmenü des Model Managers für Ollama mit Auflistung der installierten Modelle](./Beispielbild/ollama-manage-beispiel-text.png)
 
 ## Hinweise
 
