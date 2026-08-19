@@ -8,7 +8,7 @@ Ein kleines Shell-Projekt zur komfortablen Verwaltung von [Ollama](https://ollam
 - **Modelle installieren** – Modelle per `ollama pull` aus der Registry herunterladen
 - **Modelle löschen** – lokale Modelle per `ollama rm` entfernen
 - **Modelle starten** – interaktiv per `ollama run` nutzen
-- **Modelle stoppen** – laufende Modelle per `ollama stop` beenden
+- **Modelle stoppen** – laufende Modelle per Ollama-HTTP-API beenden (`keep_alive: 0`)
 - **Interaktive Modellauswahl** – erkennt automatisch `fzf`, `whiptail` oder fällt auf eine numerische Texteingabe zurück
 - **Wahl zwischen Text- und Dialogmenü** – automatische Auswahl oder per Umgebungsvariable `OLLAMA_MANAGE_UI` steuerbar
 - **Testmodelle installieren** – per Zusatzskript `modelleZumTestenInstall.sh`
@@ -69,12 +69,12 @@ Das Skript prüft beim Start, ob `ollama` installiert und erreichbar ist. Anschl
 | 2) Modell installieren | Modell installieren | Lädt ein Modell herunter (`ollama pull`) |
 | 3) Modell löschen | Modell löschen | Entfernt ein ausgewähltes Modell (`ollama rm`) |
 | 4) Modell starten | Modell starten | Startet ein ausgewähltes Modell interaktiv (`ollama run`) |
-| 5) Modell stoppen | Modell stoppen | Stoppt ein laufendes Modell (`ollama stop`) |
+| 5) Modell stoppen | Modell stoppen | Stoppt ein laufendes Modell über die Ollama-HTTP-API (`keep_alive: 0`) |
 | 6) Beenden | Beenden | Beendet das Skript |
 
 ### Auswahl des Menüs
 
-- **Standard (empfohlen):** Ohne weitere Einstellungen startet das Skript im **Textmenü**.
+- **Standard (empfohlen):** Ohne weitere Einstellungen erkennt das Skript automatisch, ob `whiptail` installiert ist und das Terminal interaktiv ist – dann erscheint das whiptail-Dialogmenü, andernfalls das Textmenü.
 - **Per Umgebungsvariable erzwingen:**
 
 ```bash
@@ -82,7 +82,7 @@ OLLAMA_MANAGE_UI=whiptail ./ollama-manage.sh   # whiptail-Dialoge erzwingen
 OLLAMA_MANAGE_UI=text ./ollama-manage.sh       # Textmenü erzwingen
 ```
 
-Das whiptail-Menü wird nur verwendet, wenn `OLLAMA_MANAGE_UI=whiptail` gesetzt ist, `whiptail` installiert ist und das Skript in einem interaktiven Terminal (tty) läuft. Andernfalls fällt das Skript automatisch auf das Textmenü zurück.
+Mit `OLLAMA_MANAGE_UI=whiptail` wird das Dialogmenü nur dann verwendet, wenn `whiptail` installiert ist **und** das Skript in einem interaktiven Terminal (tty) läuft. Ist das nicht der Fall, erscheint eine Warnung und das Skript fällt auf das Textmenü zurück. Mit `OLLAMA_MANAGE_UI=text` wird immer das Textmenü verwendet.
 
 ### Modellauswahl im Menü
 
