@@ -116,9 +116,19 @@ Das Install-Skript lädt derzeit diese Modelle:
 - Wird ein Modellname falsch geschrieben oder das Modell ist nicht verfügbar, zeigt Ollama eine entsprechende Fehlermeldung an.
 - Alle Aktionen kümmern sich um leere/fehlende Angaben und brechen dann sauber ab.
 
-## Beispielbild
+## Beispielbilder
 
-Hier siehst du das Textmenü des Skripts im Terminal – inklusive der Auflistung der installierten Modelle:
+Hier sind Screenshots des Skripts in verschiedenen Modi:
+
+### Textmenü (Standard ohne fzf/whiptail)
+
+![Terminal-Screenshot: Textmenü des Model Managers für Ollama](./Beispielbild/ollama-manage-beispiel-text.png)
+
+### whiptail-Dialog (grafisches Menü)
+
+![Terminal-Screenshot: whiptail-Dialog Menü des Model Managers für Ollama](./Beispielbild/ollama-manage-beispiel-whipe.png)
+
+### Textmenü mit Modellauflistung
 
 ![Terminal-Screenshot: Textmenü des Model Managers für Ollama mit Auflistung der installierten Modelle](./Beispielbild/ollama-manage-beispiel.png)
 
@@ -133,4 +143,4 @@ Hier siehst du das Textmenü des Skripts im Terminal – inklusive der Auflistun
 
 Dieses Projekt ist unter der **MIT-Lizenz** lizenziert – siehe [LICENSE](LICENSE).
 
-Copyright (c) 2026 Matze Tau# matzetau70-Scripte_BashShellCLI
+Copyright (c) 2026 Matthias Post# matzetau70-Scripte_BashShellCLI
