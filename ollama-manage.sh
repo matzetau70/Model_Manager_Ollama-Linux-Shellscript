@@ -53,26 +53,26 @@ pick_model() {
     local prompt="${1:-Modell waehlen}"
     local ui_mode="${2:-auto}"
     local model
-    
+
     # 1. Whiptail Modus (Priorität wenn verlangt)
     if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
         local options=()
         while IFS= read -r line; do
             [ -n "$line" ] || continue
-            options+=("$line" "") 
+            options+=("$line" "")
         done < <(list_models)
-        
+
         if [ "${#options[@]}" -eq 0 ]; then
             whiptail --title "$APP_NAME" --msgbox "Keine Modelle lokal installiert." 10 50
             return 1
         fi
-        
+
         model="$(whiptail --title "$APP_NAME" --menu "$prompt" 20 78 10 "${options[@]}" 3>&1 1>&2 2>&3)" || return 1
-    
+
     # 2. FZF Modus (Fallback für Text-Modus)
     elif have fzf && [ -t 1 ] && [ "$ui_mode" != "text" ]; then
         model="$(list_models | fzf --prompt="${prompt}: " --height=10 --border)" || return 1
-    
+
     # 3. Reines Text-Fallback
     else
         local model_map=()
@@ -80,19 +80,19 @@ pick_model() {
             [ -n "$line" ] || continue
             model_map+=("$line")
         done < <(list_models)
-        
+
         if [ "${#model_map[@]}" -eq 0 ]; then
             echo "Keine Modelle lokal installiert." >&2
             return 1
         fi
-        
+
         echo "Verfuegbare Modelle:" >&2
         for i in "${!model_map[@]}"; do
             printf '%d) %s\n' "$((i+1))" "${model_map[$i]}" >&2
         done
         printf "%s (Nummer eingeben): " "$prompt" >&2
         read -r choice
-        
+
         if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#model_map[@]}" ]; then
             model="${model_map[$((choice-1))]}"
         else
@@ -152,7 +152,7 @@ pull_model() {
                 }
             }'
         ) | whiptail --title "Download: $model" --gauge "Bereite Download vor..." 10 60 0
-        
+
         whiptail --title "Erfolg" --msgbox "Modell $model wurde erfolgreich installiert." 10 50
     else
         echo "Installiere: $model"
@@ -160,61 +160,177 @@ pull_model() {
     fi
 }
 
-# Loescht ein Modell mit grafischer Sicherheitsabfrage.
+# Löscht ein Modell über ein exklusives Whiptail-Auswahlmenü mit Sicherheitsabfrage.
 remove_model() {
     local ui_mode="$1"
-    local model
-    model="$(pick_model "Welches Modell loeschen?" "$ui_mode" || true)"
-    
-    if [ -z "$model" ]; then
-        return
-    fi
-    
-    if [ "$ui_mode" = "whiptail" ]; then
-        if whiptail --title "Sicherheitsabfrage" --yesno "Möchten Sie das Modell $model wirklich unwiderruflich löschen?" 10 60; then
-            ollama rm "$model"
-            whiptail --title "Erfolg" --msgbox "Modell $model wurde gelöscht." 10 50
+    local model=""
+
+    if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
+        local options=()
+
+        # Erstellt die Menüstruktur direkt aus der installierten Modellliste
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            options+=("$line" "") # Modellname und leere Beschreibung für Whiptail
+        done < <(list_models)
+
+        # Fehler abfangen, falls gar keine Modelle installiert sind
+        if [ "${#options[@]}" -eq 0 ]; then
+            whiptail --title "$APP_NAME" --msgbox "Keine Modelle lokal installiert." 10 55
+            return 1
+        fi
+
+        # Das dedizierte Whiptail-Auswahlmenü für den Löschvorgang
+        model="$(whiptail --title "Modell löschen" \
+                          --menu "Wähle das Modell aus, das unwiderruflich gelöscht werden soll:" \
+                          20 78 10 "${options[@]}" 3>&1 1>&2 2>&3)" || return 0
+
+        if [ -n "$model" ]; then
+            # Grafische Sicherheitsabfrage (Standardmäßig steht der Fokus auf "Nein")
+            if whiptail --title "⚠️ WARNUNG ⚠️" \
+                        --defaultno \
+                        --yesno "Möchten Sie das Modell '$model' wirklich unwiderruflich von der Festplatte löschen?" \
+                        10 65; then
+
+                # Modell löschen
+                ollama rm "$model"
+
+                # Erfolgsmeldung anzeigen
+                whiptail --title "Erfolg" --msgbox "Das Modell '$model' wurde erfolgreich gelöscht." 10 55
+            else
+                # Wenn der Nutzer "Nein" wählt oder abbricht
+                whiptail --title "Abgebrochen" --msgbox "Löschvorgang für '$model' wurde abgebrochen." 10 55
+            fi
         fi
     else
-        echo "Loesche: $model"
-        ollama rm "$model"
+        # Text-Fallback, falls whiptail nicht aktiv ist
+        printf "Name des zu löschenden Modells eingeben: "
+        read -r model
+        if [ -n "$model" ]; then
+            echo "Loesche: $model"
+            ollama rm "$model"
+        fi
     fi
 }
 
-# Startet ein Modell (Wechselt immer in das normale Terminal).
+
+# Startet ein Modell und nutzt dafür eine exklusive Whiptail-Modellliste.
 run_model() {
     local ui_mode="$1"
-    local model
-    model="$(pick_model "Welches Modell starten?" "$ui_mode" || true)"
-    
-    if [ -z "$model" ]; then
-        return
+    local model=""
+
+    if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
+        local options=()
+
+        # Erstellt die Menüstruktur direkt aus der installierten Modellliste
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            options+=("$line" "") # Modellname und leere Beschreibung für Whiptail
+        done < <(list_models)
+
+        # Fehler abfangen, falls gar keine Modelle installiert sind
+        if [ "${#options[@]}" -eq 0 ]; then
+            whiptail --title "$APP_NAME" --msgbox "Keine Modelle lokal installiert.\nBitte zuerst ein Modell herunterladen." 10 55
+            return 1
+        fi
+
+        # Das dedizierte Whiptail-Auswahlmenü für den Startvorgang
+        model="$(whiptail --title "Modell starten" \
+                          --menu "Wähle das Modell für die Chat-Sitzung aus:" \
+                          20 78 10 "${options[@]}" 3>&1 1>&2 2>&3)" || return 0
+
+        if [ -n "$model" ]; then
+            # Infobox anzeigen, während das Modell in den VRAM/RAM geladen wird
+            whiptail --title "Ollama" --infobox "Modell '$model' wird geladen...\nDas Chat-Terminal öffnet sich in Kürze." 10 60
+            sleep 1.5
+
+            # Öffnet das interaktive Chat-Terminal
+            ollama run -- "$model"
+
+            # Quittiert das saubere Beenden des Chats
+            whiptail --title "Beendet" --msgbox "Die Chat-Sitzung mit '$model' wurde geschlossen." 10 55
+        fi
+    else
+        # Text-Fallback, falls whiptail nicht aktiv ist
+        printf "Modellname eingeben: "
+        read -r model
+        if [ -n "$model" ]; then
+            echo "Starte: $model"
+            ollama run -- "$model"
+        fi
     fi
-    
-    # Wechselt kurz ins Terminal für den interaktiven Chat
-    ollama run -- "$model"
 }
 
-# Stoppt ein laufendes Modell via HTTP-API.
+
+# Stoppt ein laufendes Modell und nutzt dafür die Echtzeitdaten aus 'ollama ps'.
 stop_model() {
     local ui_mode="$1"
-    local model
-    model="$(pick_model "Welches Modell stoppen?" "$ui_mode" || true)"
-    
-    if [ -z "$model" ]; then
-        return
-    fi
-    
-    curl -s -X POST http://localhost:11434/api/generate \
-        -H "Content-Type: application/json" \
-        -d "{\"model\": \"$model\", \"keep_alive\": 0}" >/dev/null
-        
-    if [ "$ui_mode" = "whiptail" ]; then
-        whiptail --title "Erfolg" --msgbox "Das Modell $model wurde aus dem RAM/VRAM entladen." 10 55
+    local model=""
+
+    if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
+        local options=()
+
+        # Liest Name, Größe und VRAM-Aufteilung direkt aus 'ollama ps'
+        # Überspringt die Kopfzeile und leere Zeilen
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+
+            # Extrahiert den Modellnamen (Spalte 1)
+            local name
+            name=$(echo "$line" | awk '{print $1}')
+
+            # Extrahiert die Größe und GPU-Verteilung (Spalten 3 und 4)
+            local details
+            details=$(echo "$line" | awk '{print "Größe: " $3 ", GPU: " $4}')
+
+            options+=("$name" "$details")
+        done < <(ollama ps 2>/dev/null | awk 'NR>1')
+
+        # Falls aktuell überhaupt kein Modell im Speicher geladen ist
+        if [ "${#options[@]}" -eq 0 ]; then
+            whiptail --title "Speicher leeren" \
+                     --msgbox "Aktuell sind keine Modelle laut 'ollama ps' geladen.\nEs gibt nichts zu stoppen." \
+                     10 60
+            return 0
+        fi
+
+        # Das maßgeschneiderte Whiptail-Auswahlmenü mit Live-Speicherdaten
+        model="$(whiptail --title "Modell stoppen (RAM/VRAM leeren)" \
+                          --menu "Wähle das Modell aus, das entladen werden soll:" \
+                          20 78 10 "${options[@]}" 3>&1 1>&2 2>&3)" || return 0
+
+        if [ -n "$model" ]; then
+            whiptail --title "Ollama" --infobox "Entlade '$model' aus dem Speicher..." 10 50
+
+            # API-Call zum Stoppen absetzen und HTTP-Statuscode prüfen
+            local response
+            response=$(curl -s -w "%{http_code}" -X POST http://localhost:11434/api/generate \
+                -H "Content-Type: application/json" \
+                -d "{\"model\": \"$model\", \"keep_alive\": 0}" -o /dev/null)
+
+            if [ "$response" = "200" ]; then
+                whiptail --title "Erfolg" --msgbox "Das Modell '$model' wurde erfolgreich aus dem RAM/VRAM entladen." 10 65
+            else
+                whiptail --title "Fehler" --msgbox "API-Fehler beim Stoppen des Modells.\nHTTP-Statuscode: $response" 10 60
+            fi
+        fi
     else
-        echo "Stopp-Befehl gesendet."
+        # Text-Fallback, falls whiptail nicht aktiv ist
+        echo "=== Laufende Modelle (ollama ps) ==="
+        ollama ps
+        echo
+        printf "Name des zu stoppenden Modells eingeben: "
+        read -r model
+        if [ -n "$model" ]; then
+            echo "Stoppe: $model"
+            curl -s -X POST http://localhost:11434/api/generate \
+                -H "Content-Type: application/json" \
+                -d "{\"model\": \"$model\", \"keep_alive\": 0}" >/dev/null
+        fi
     fi
 }
+
+
 
 # Textbasiertes Fallback-Menue.
 text_menu() {
@@ -254,7 +370,7 @@ whiptail_menu() {
     while true; do
         local choice
         choice="$(whiptail --title "$APP_NAME" --menu "Hauptmenü" 20 78 10 "${menu_items[@]}" 3>&1 1>&2 2>&3)" || exit 0
-        
+
         case "$choice" in
             1) show_list_whiptail ;;
             2) pull_model "whiptail" ;;
