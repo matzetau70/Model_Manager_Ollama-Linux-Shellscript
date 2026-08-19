@@ -16,18 +16,19 @@ Ein kleines Shell-Projekt zur komfortablen Verwaltung von [Ollama](https://ollam
 ## Enthaltene Skripte
 
 | Skript | Beschreibung |
-|---|---|
+| --- | --- |
 | `ollama-manage.sh` | Interaktives Werkzeug zum Auflisten, Installieren, Starten, Stoppen und Entfernen von Modellen |
 | `modelleZumTestenInstall.sh` | Installiert eine kleine Auswahl an Modellen für Test- und Demo-Setups |
 
 ## Projektstruktur
 
-```
+``` text
 ├── ollama-manage.sh              # Hauptskript (Verwaltung)
 ├── modelleZumTestenInstall.sh    # Testmodelle herunterladen
 ├── LICENSE                       # MIT-Lizenz
 ├── README.md                     # Diese Dokumentation
 └── Beispielbild/
+    └── ollama-manage-beispiel-whipe.png
     └── ollama-manage-beispiel.png
 ```
 
@@ -39,7 +40,7 @@ Ein kleines Shell-Projekt zur komfortablen Verwaltung von [Ollama](https://ollam
 ### Optionale Abhängigkeiten
 
 | Tool | Zweck |
-|---|---|
+| --- | --- |
 | `fzf` | Komfortable, durchsuchbare Modellauswahl (wird bevorzugt verwendet) |
 | `whiptail` | Terminal-Menü mit grafischen Dialogen (z. B. Paket `whiptail` bzw. `newt` auf Debian/Ubuntu) |
 
@@ -64,7 +65,7 @@ Das Skript prüft beim Start, ob `ollama` installiert und erreichbar ist. Anschl
 ### Menüpunkte
 
 | Textmenü | whiptail-Dialog | Funktion |
-|---|---|---|
+| --- | --- | --- |
 | 1) Modelle auflisten | Modelle auflisten | Zeigt alle lokal installierten Modelle |
 | 2) Modell installieren | Modell installieren | Lädt ein Modell herunter (`ollama pull`) |
 | 3) Modell löschen | Modell löschen | Entfernt ein ausgewähltes Modell (`ollama rm`) |
