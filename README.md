@@ -101,6 +101,8 @@ Das Testskript testet alle 10 Menüpunkte in beiden UI-Modi sowie Fehlerfälle (
 
 ## 📄 Lizenz
 
+**Copyright © 2026 matzetau70** – Alle Rechte vorbehalten.
+
 Dieses Projekt ist unter der **MIT-Lizenz** veröffentlicht.
 
 ``` text
