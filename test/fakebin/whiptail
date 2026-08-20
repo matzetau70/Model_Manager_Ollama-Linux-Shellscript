@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Fake-whiptail: Simuliert whiptail für Tests.
+# Gibt je nach Aufruf unterschiedliche Werte zurück.
+# --menu: gibt "1" zurück (erste Option)
+# --msgbox/--infobox/--textbox: gibt 0 zurück
+# --yesno: gibt 0 zurück (Ja)
+# --inputbox: gibt "testmodell" zurück
+# --gauge: gibt 0 zurück
+case "$1" in
+    --menu)
+        echo "1"
+        exit 0
+        ;;
+    --yesno)
+        exit 0
+        ;;
+    --inputbox)
+        echo "testmodell"
+        exit 0
+        ;;
+    --gauge)
+        exit 0
+        ;;
+    --msgbox|--infobox|--textbox)
+        exit 0
+        ;;
+    *)
+        exit 0
+        ;;
+esac

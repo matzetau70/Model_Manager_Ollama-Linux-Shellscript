@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Fake-systemctl: Simuliert systemctl, Dienst aktiv
+if [ "$1" = "list-unit-files" ]; then
+    exit 0  # Dienst existiert
+fi
+if [ "$1" = "is-active" ]; then
+    exit 0  # Dienst aktiv
+fi
+if [ "$1" = "status" ]; then
+    echo "ollama.service - Ollama Service"
+    echo "   Active: active (running)"
+    exit 0
+fi
+exit 0
