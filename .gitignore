@@ -33,6 +33,10 @@ test/fakebin/
 test/*.log
 test/output/
 test/tmp/
+tests/fakebin/
+tests/*.log
+tests/output/
+tests/tmp/
 
 # --- Ausführbare Dateien (falls kompiliert) -------------------------------
 *.exe
