@@ -2,6 +2,8 @@
 # .gitignore für Bash-Projekte
 # =============================================================================
 
+Review.md
+
 # --- Betriebssystem-Dateien --------------------------------------------------
 .DS_Store
 Thumbs.db
