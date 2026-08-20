@@ -13,6 +13,7 @@ check_installed() {
     have ollama
 }
 
+
 # Holt den aktuellen Status für die Menübox
 get_status_string() {
     if check_installed; then
