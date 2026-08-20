@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Fake-ollama: Simuliert ollama, das installiert ist und Daemon läuft
+if [ "$1" = "-v" ]; then
+    echo "ollama version is 0.32.14"
+    exit 0
+fi
+if [ "$1" = "list" ]; then
+    echo "NAME    ID    SIZE    MODIFIED"
+    exit 0
+fi
+exit 0
