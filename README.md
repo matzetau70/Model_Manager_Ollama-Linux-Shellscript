@@ -101,14 +101,14 @@ Das Testskript testet alle 10 Menüpunkte in beiden UI-Modi sowie Fehlerfälle (
 
 ## 📄 Lizenz
 
-**Copyright © 2026 matzetau70** – Alle Rechte vorbehalten.
+**Copyright © 2026 Matthias Post (matzetau70)** – Alle Rechte vorbehalten.
 
 Dieses Projekt ist unter der **MIT-Lizenz** veröffentlicht.
 
 ``` text
 MIT License
 
-Copyright (c) 2026 matzetau70
+Copyright (c) 2026 Matthias Post (matzetau70)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
