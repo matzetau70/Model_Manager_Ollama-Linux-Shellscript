@@ -471,11 +471,11 @@ text_menu() {
         printf "Auswahl: "
         read -r choice
         case "$choice" in
-            1) show_list_text || true ;;
-            2) pull_model "text" || true ;;
-            3) remove_model "text" || true ;;
-            4) run_model "text" || true ;;
-            5) stop_model "text" || true ;;
+            1) require_ollama && show_list_text || true ;;
+            2) require_ollama && pull_model "text" || true ;;
+            3) require_ollama && remove_model "text" || true ;;
+            4) require_ollama && run_model "text" || true ;;
+            5) require_ollama && stop_model "text" || true ;;
             6) install_ollama "text" || true ;;
             7) status_service "text" || true ;;
             8) start_service "text" || true ;;
@@ -506,11 +506,11 @@ whiptail_menu() {
         choice="$(whiptail --title "$APP_NAME" --menu "Hauptmenü\nStatus: $(get_status_string)" 22 78 12 "${menu_items[@]}" 3>&1 1>&2 2>&3)" || exit 0
 
         case "$choice" in
-            1) show_list_whiptail ;;
-            2) pull_model "whiptail" ;;
-            3) remove_model "whiptail" ;;
-            4) run_model "whiptail" ;; # Springt für den Chat kurz ins Terminal
-            5) stop_model "whiptail" ;;
+            1) require_ollama && show_list_whiptail ;;
+            2) require_ollama && pull_model "whiptail" ;;
+            3) require_ollama && remove_model "whiptail" ;;
+            4) require_ollama && run_model "whiptail" ;; # Springt für den Chat kurz ins Terminal
+            5) require_ollama && stop_model "whiptail" ;;
             6) install_ollama "whiptail" ;;
             7) status_service "whiptail" ;;
             8) start_service "whiptail" ;;
