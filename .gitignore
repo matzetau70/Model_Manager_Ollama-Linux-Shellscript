@@ -1,0 +1,111 @@
+# =============================================================================
+# .gitignore für Bash-Projekte
+# =============================================================================
+
+# --- Betriebssystem-Dateien --------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# --- Editor-Konfigurationen --------------------------------------------------
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-workspace
+*.sublime-project
+
+# --- Temporäre Dateien -----------------------------------------------------
+*.tmp
+*.temp
+*.log
+*.bak
+*.old
+*.orig
+*.rej
+*.diff
+*.patch
+
+# --- Test-Artefakte ---------------------------------------------------------
+test/fakebin/
+test/*.log
+test/output/
+test/tmp/
+
+# --- Ausführbare Dateien (falls kompiliert) -------------------------------
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# --- Build-Artefakte ---------------------------------------------------------
+build/
+dist/
+out/
+bin/
+obj/
+
+# --- Konfigurationsdateien mit sensiblen Daten ----------------------------
+.env
+.env.*
+*.env
+config.local.*
+*.secret
+*.key
+*.pem
+*.crt
+
+# --- Backup-Dateien ---------------------------------------------------------
+*.bak
+*.backup
+*.old
+*.new
+*.save
+*.sav
+
+# --- Log-Dateien ---------------------------------------------------------
+logs/
+*.log
+*.log.*
+
+# --- Caches ---------------------------------------------------------------
+.cache/
+__pycache__/
+*.pyc
+
+# --- Versionskontrolle ------------------------------------------------------
+*.orig
+*.rej
+*.mine
+*.theirs
+
+# --- Sonstiges ---------------------------------------------------------------
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.7z
+*.gz
+*.bz2
+*.xz
+*.tgz
+*.tbz2
+*.iso
+*.img
+*.dmg
+
+# --- Skript-spezifische Artefakte -----------------------------------------
+# Temporäre Skripte und Testdateien
+test_*.sh.tmp
+*.test.sh
+*.spec.sh
+
+# --- Verzeichnisse ---------------------------------------------------------
+node_modules/
+vendor/
+tmp/
+temp/
+logs/
