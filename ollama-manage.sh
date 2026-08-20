@@ -2,6 +2,7 @@
 set -euo pipefail
 
 APP_NAME="Model Manager fuer Ollama(Linux)"
+APP_VERSION="0.8"
 
 # Kleiner Helfer, um Abhaengigkeiten per PATH zu pruefen.
 have() {
@@ -455,7 +456,7 @@ stop_model() {
 # Textbasiertes Fallback-Menue.
 text_menu() {
     while true; do
-        echo "=== $APP_NAME ==="
+        echo "=== $APP_NAME v$APP_VERSION ==="
         echo "Status: $(get_status_string)"
         echo
         echo "1) Modelle auflisten"
@@ -503,7 +504,7 @@ whiptail_menu() {
     )
     while true; do
         local choice
-        choice="$(whiptail --title "$APP_NAME" --menu "Hauptmenü\nStatus: $(get_status_string)" 22 78 12 "${menu_items[@]}" 3>&1 1>&2 2>&3)" || exit 0
+        choice="$(whiptail --title "$APP_NAME v$APP_VERSION" --menu "Hauptmenü\nStatus: Ollama $(get_status_string)" 22 78 12 "${menu_items[@]}" 3>&1 1>&2 2>&3)" || exit 0
 
         case "$choice" in
             1) require_ollama && show_list_whiptail ;;
