@@ -8,29 +8,139 @@ have() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Bricht sauber ab, wenn ollama nicht installiert oder nicht erreichbar ist.
-require_ollama() {
-    if ! have ollama; then
-        if [ "${OLLAMA_MANAGE_UI:-auto}" != "text" ] && have whiptail && [ -t 1 ]; then
-            whiptail --title "$APP_NAME" --msgbox "Fehler: ollama wurde nicht gefunden.\nBitte installieren Sie ollama." 10 60
+# Prüft, ob ollama installiert ist
+check_installed() {
+    have ollama
+}
+
+# Holt den aktuellen Status für die Menübox
+get_status_string() {
+    if check_installed; then
+        local version
+        version=$(ollama -v 2>/dev/null | grep -oP 'version is \K[0-9.]+' | head -1)
+        if [ -n "$version" ]; then
+            echo "Installiert (Version $version)"
         else
-            echo "Fehler: ollama wurde nicht gefunden."
+            echo "Installiert"
         fi
-        exit 1
+    else
+        echo "Nicht installiert"
+    fi
+}
+
+# Zeigt eine Fehlermeldung im passenden UI-Modus an.
+show_error() {
+    local message="$1"
+    if [ "${OLLAMA_MANAGE_UI:-auto}" != "text" ] && have whiptail && [ -t 1 ]; then
+        whiptail --title "$APP_NAME" --msgbox "$message" 10 60
+    else
+        echo -e "Fehler: $message" >&2
+    fi
+}
+
+# Prüft, ob ollama installiert ist. Gibt 0 zurück wenn ja, sonst 1.
+require_ollama() {
+    if ! check_installed; then
+        show_error "ollama wurde nicht gefunden.\nBitte installieren Sie ollama (Menüpunkt 6)."
+        return 1
     fi
 
     if ! ollama list >/dev/null 2>&1; then
-        if [ "${OLLAMA_MANAGE_UI:-auto}" != "text" ] && have whiptail && [ -t 1 ]; then
-            whiptail --title "$APP_NAME" --msgbox "Fehler: Der Ollama-Daemon ist nicht erreichbar.\nBitte starten Sie den Dienst (z.B. 'ollama serve')." 10 60
-        else
-            echo "Fehler: Der Ollama-Daemon ist nicht erreichbar."
+        show_error "Der Ollama-Daemon ist nicht erreichbar.\nBitte starten Sie den Dienst (z.B. 'ollama serve' oder Menüpunkt 8)."
+        return 1
+    fi
+    return 0
+}
+
+# 1. Ollama Installieren oder Aktualisieren
+install_ollama() {
+    local ui_mode="$1"
+
+    if [ "$ui_mode" = "whiptail" ]; then
+        if ! whiptail --title "Ollama Installation" --yesno "Möchten Sie Ollama jetzt installieren oder aktualisieren?" 10 60; then
+            return 0
         fi
-        exit 1
+        clear
+        echo -e "\033[0;34m[*] Starte Ollama Installation/Update...\033[0;37m"
+        if curl -fsSL https://ollama.com/install.sh | sh; then
+            local version
+            version=$(ollama -v 2>/dev/null | grep -oP 'version is \K[0-9.]+' | head -1)
+            whiptail --title "Erfolg" --msgbox "Ollama wurde erfolgreich installiert!\nVersion: ${version:-unbekannt}" 10 60
+        else
+            whiptail --title "Fehler" --msgbox "Fehler bei der Installation von Ollama." 10 60
+        fi
+    else
+        echo "Starte Ollama Installation/Update..."
+        if curl -fsSL https://ollama.com/install.sh | sh; then
+            echo "Ollama wurde erfolgreich installiert!"
+            ollama -v 2>/dev/null || true
+        else
+            echo "Fehler bei der Installation von Ollama." >&2
+        fi
+    fi
+}
+
+# 2. Status des systemd-Dienstes anzeigen
+status_service() {
+    local ui_mode="$1"
+
+    if [ "$ui_mode" = "whiptail" ]; then
+        local tmp_file
+        tmp_file=$(mktemp)
+        sudo systemctl status ollama --no-pager > "$tmp_file" 2>&1
+        whiptail --title "Systemd Dienst-Status" --textbox "$tmp_file" 22 80
+        rm -f "$tmp_file"
+    else
+        echo "=== Systemd Dienst-Status ==="
+        sudo systemctl status ollama --no-pager
+    fi
+}
+
+# 3. Dienst starten
+start_service() {
+    local ui_mode="$1"
+
+    if [ "$ui_mode" = "whiptail" ]; then
+        clear
+        if sudo systemctl start ollama; then
+            whiptail --title "Dienst gestartet" --msgbox "Der Ollama-Hintergrunddienst wurde gestartet." 10 60
+        else
+            whiptail --title "Fehler" --msgbox "Fehler beim Starten des Ollama-Dienstes." 10 60
+        fi
+    else
+        echo "Starte Ollama-Dienst..."
+        if sudo systemctl start ollama; then
+            echo "Der Ollama-Hintergrunddienst wurde gestartet."
+        else
+            echo "Fehler beim Starten des Ollama-Dienstes." >&2
+        fi
+    fi
+}
+
+# 4. Dienst stoppen
+stop_service() {
+    local ui_mode="$1"
+
+    if [ "$ui_mode" = "whiptail" ]; then
+        clear
+        if sudo systemctl stop ollama; then
+            whiptail --title "Dienst gestoppt" --msgbox "Der Ollama-Hintergrunddienst wurde angehalten." 10 60
+        else
+            whiptail --title "Fehler" --msgbox "Fehler beim Stoppen des Ollama-Dienstes." 10 60
+        fi
+    else
+        echo "Stoppe Ollama-Dienst..."
+        if sudo systemctl stop ollama; then
+            echo "Der Ollama-Hintergrunddienst wurde angehalten."
+        else
+            echo "Fehler beim Stoppen des Ollama-Dienstes." >&2
+        fi
     fi
 }
 
 # Zeigt die Modelle formatiert in einer Whiptail-Nachrichtenbox an.
 show_list_whiptail() {
+    require_ollama || return 1
     local list
     list=$(ollama list)
     whiptail --title "Installierte Modelle" --msgbox "$list" 20 78
@@ -38,6 +148,7 @@ show_list_whiptail() {
 
 # Text-Fallback für die Modellliste.
 show_list_text() {
+    require_ollama || return 1
     echo "=== Installierte Modelle ==="
     ollama list
     echo
@@ -108,6 +219,8 @@ pull_model() {
     local ui_mode="$1"
     local model=""
 
+    require_ollama || return 1
+
     if [ "$ui_mode" = "whiptail" ]; then
         model=$(whiptail --title "Modell installieren" --inputbox "Bitte den genauen Modellnamen eingeben (z. B. llama3.2:1b):" 10 60 3>&1 1>&2 2>&3) || return 0
     else
@@ -165,6 +278,8 @@ remove_model() {
     local ui_mode="$1"
     local model=""
 
+    require_ollama || return 1
+
     if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
         local options=()
 
@@ -219,6 +334,8 @@ run_model() {
     local ui_mode="$1"
     local model=""
 
+    require_ollama || return 1
+
     if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
         local options=()
 
@@ -266,6 +383,8 @@ run_model() {
 stop_model() {
     local ui_mode="$1"
     local model=""
+
+    require_ollama || return 1
 
     if [ "$ui_mode" = "whiptail" ] && [ -t 1 ]; then
         local options=()
@@ -336,21 +455,31 @@ stop_model() {
 text_menu() {
     while true; do
         echo "=== $APP_NAME ==="
+        echo "Status: $(get_status_string)"
+        echo
         echo "1) Modelle auflisten"
         echo "2) Modell installieren"
         echo "3) Modell loeschen"
         echo "4) Modell starten"
         echo "5) Modell stoppen"
-        echo "6) Beenden"
+        echo "6) Ollama installieren/aktualisieren"
+        echo "7) Dienst-Status anzeigen"
+        echo "8) Dienst starten"
+        echo "9) Dienst stoppen"
+        echo "10) Beenden"
         printf "Auswahl: "
         read -r choice
         case "$choice" in
-            1) show_list_text ;;
-            2) pull_model "text" ;;
-            3) remove_model "text" ;;
-            4) run_model "text" ;;
-            5) stop_model "text" ;;
-            6|q|Q) exit 0 ;;
+            1) show_list_text || true ;;
+            2) pull_model "text" || true ;;
+            3) remove_model "text" || true ;;
+            4) run_model "text" || true ;;
+            5) stop_model "text" || true ;;
+            6) install_ollama "text" || true ;;
+            7) status_service "text" || true ;;
+            8) start_service "text" || true ;;
+            9) stop_service "text" || true ;;
+            10|q|Q) exit 0 ;;
             *) echo "Ungueltige Auswahl." ;;
         esac
         echo
@@ -365,11 +494,15 @@ whiptail_menu() {
         "3" "Modell loeschen"
         "4" "Modell starten"
         "5" "Modell stoppen"
-        "6" "Beenden"
+        "6" "Ollama installieren/aktualisieren"
+        "7" "Dienst-Status anzeigen"
+        "8" "Dienst starten"
+        "9" "Dienst stoppen"
+        "10" "Beenden"
     )
     while true; do
         local choice
-        choice="$(whiptail --title "$APP_NAME" --menu "Hauptmenü" 20 78 10 "${menu_items[@]}" 3>&1 1>&2 2>&3)" || exit 0
+        choice="$(whiptail --title "$APP_NAME" --menu "Hauptmenü\nStatus: $(get_status_string)" 22 78 12 "${menu_items[@]}" 3>&1 1>&2 2>&3)" || exit 0
 
         case "$choice" in
             1) show_list_whiptail ;;
@@ -377,13 +510,16 @@ whiptail_menu() {
             3) remove_model "whiptail" ;;
             4) run_model "whiptail" ;; # Springt für den Chat kurz ins Terminal
             5) stop_model "whiptail" ;;
-            6) exit 0 ;;
+            6) install_ollama "whiptail" ;;
+            7) status_service "whiptail" ;;
+            8) start_service "whiptail" ;;
+            9) stop_service "whiptail" ;;
+            10) exit 0 ;;
         esac
     done
 }
 
 main() {
-    require_ollama
     case "${OLLAMA_MANAGE_UI:-auto}" in
         text)     text_menu ;;
         whiptail)
