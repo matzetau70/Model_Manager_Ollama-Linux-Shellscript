@@ -9,7 +9,7 @@ Ein Bash-Skript zur Verwaltung von Ollama-Modellen auf Linux-Systemen. Bietet ei
 ## 📋 Funktionen
 
 | Nr. | Funktion | Beschreibung |
-|-----|----------|--------------|
+| ----- | ---------- | -------------- |
 | 1 | **Modelle auflisten** | Zeigt alle lokal installierten Ollama-Modelle an |
 | 2 | **Modell installieren** | Lädt ein Modell von Ollama herunter (mit Fortschrittsanzeige im Whiptail-Modus) |
 | 3 | **Modell löschen** | Entfernt ein Modell unwiderruflich von der Festplatte (mit Sicherheitsabfrage) |
@@ -53,7 +53,7 @@ chmod +x ollama-manage.sh
 Das Skript wählt automatisch den passenden Modus:
 
 | Modus | Beschreibung |
-|-------|--------------|
+| ------- | -------------- |
 | **auto** (Standard) | Nutzt Whiptail, wenn ein Terminal und whiptail verfügbar sind, sonst Text-Modus |
 | **text** | Erzwingt den Text-Modus |
 | **whiptail** | Erzwingt den Whiptail-Modus |
@@ -78,7 +78,7 @@ Das Testskript testet alle 10 Menüpunkte in beiden UI-Modi sowie Fehlerfälle (
 
 ## 📁 Projektstruktur
 
-```
+``` text
 ├── ollama-manage.sh          # Hauptskript
 ├── ollama-manage.png         # Screenshot (Whiptail-Modus)
 ├── ollama-manage-text.png    # Screenshot (Text-Modus)
